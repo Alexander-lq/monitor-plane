@@ -4,18 +4,16 @@ import gzip
 import time
 import json
 import random
-from telnetlib import EC
 
 import requests
 import threading
 import pandas as pd
-from selenium import webdriver
+from seleniumwire import webdriver
 from datetime import datetime as dt, timedelta
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, \
     ElementNotInteractableException, ElementClickInterceptedException  # 加载异常
-from selenium.webdriver.support.wait import WebDriverWait
 
 
 def getcitycode():
@@ -47,7 +45,7 @@ def getcitycode():
 class FLIGHT(object):
     def __init__(self):
         self.url = 'https://flights.ctrip.com/online/list/oneway'  # 携程机票查询页面
-        self.chromeDriverPath = 'D:/01_company/03_config/.pyenv/pyenv-win/versions/3.7.5'  # chromedriver位置
+        self.chromeDriverPath = 'H:/Config/chromedriver.exe'  # chromedriver位置
         self.options = webdriver.ChromeOptions()  # 创建一个配置对象
         # self.options.add_argument('--incognito')  # 隐身模式（无痕模式）
         # self.options.add_argument('User-Agent=%s'%UserAgent().random) # 替换User-Agent
@@ -55,7 +53,7 @@ class FLIGHT(object):
         self.options.add_argument("--disable-blink-features=AutomationControlled")
         self.options._binary_location="C:\Program Files\Google\Chrome Beta\Application\chrome.exe"
         self.options.add_experimental_option("excludeSwitches", ['enable-automation'])  # 不显示正在受自动化软件控制
-        self.driver = webdriver.Chrome(options=self.options)
+        self.driver = webdriver.Chrome(chrome_options=self.options)
         self.driver.maximize_window()
         self.err = 0  # 错误重试次数
 
@@ -154,14 +152,7 @@ class FLIGHT(object):
     def getdata(self):
         try:
             # 等待响应加载完成
-            #  self.predata = self.driver.wait_for_request('/international/search/api/search/batchSearch?.*', timeout=60)
-
-
-            # 等待特定的网络请求完成
-            request_url = '/international/search/api/search/batchSearch?.*'
-            wait = WebDriverWait(self.driver, 60)
-            # self.predata = wait.until(EC.presence_of_element_located((By.XPATH, f"//request[url='{request_url}']")))
-            wait.until(EC.url_contains("body"))
+            self.predata = self.driver.wait_for_request('/international/search/api/search/batchSearch?.*', timeout=60)
             rb = dict(json.loads(self.predata.body).get('flightSegments')[0])
 
         except TimeoutException as e:
